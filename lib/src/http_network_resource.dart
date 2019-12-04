@@ -3,6 +3,12 @@ import 'package:meta/meta.dart';
 import 'package:http/http.dart' as http;
 import 'package:async_resource/async_resource.dart';
 
+class HttpResponseError {
+  num statusCode;
+  var body;
+  HttpResponseError({this.statusCode, this.body});
+}
+
 /// A [NetworkResource] over HTTP.
 class HttpNetworkResource<T> extends NetworkResource<T> {
   HttpNetworkResource(
@@ -43,8 +49,9 @@ class HttpNetworkResource<T> extends NetworkResource<T> {
     final response = await (client == null
         ? http.get(url, headers: headers)
         : client.get(url, headers: headers));
+
     return (response != null && acceptedResponses.contains(response.statusCode))
         ? (binary ? response.bodyBytes : response.body)
-        : null;
+        : throw HttpResponseError(statusCode: response.statusCode, body: (binary ? response.bodyBytes : response.body));
   }
 }

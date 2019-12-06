@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 
+import 'src/http_network_resource.dart';
 export 'src/http_network_resource.dart';
 
 /// [contents] will either be a [String] or [List<int>], depending on whether
@@ -164,7 +165,9 @@ abstract class NetworkResource<T> extends AsyncResource<T> {
         strategy == CacheStrategy.networkFirst ||
         await isExpired) {
       print('${cache.basename}: Fetching from $url');
-      final contents = await _tryFetchContents();
+      final contents = await fetchContents()
+        .catchError(() {}, test: (e) => !(e is HttpResponseError));
+
       if (contents != null) {
         print('$url Fetched.');
         if (!skipCacheWrite) {
